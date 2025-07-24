@@ -1,0 +1,23 @@
+{
+  "name": "youtube-backend-building",
+  "version": "1.0.0",
+  "description": "building backend for youtube (project)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AgniAditya/Youtube-Backend-Building.git"
+  },
+  "keywords": [
+    "javaScript",
+    "backend"
+  ],
+  "author": "Aditya Agnihotri",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AgniAditya/Youtube-Backend-Building/issues"
+  },
+  "homepage": "https://github.com/AgniAditya/Youtube-Backend-Building#readme"
+}
