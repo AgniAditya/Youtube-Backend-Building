@@ -182,7 +182,34 @@ const getCurrentUser = asyncHandler( async (req,res) => {
     .json(200,req.user,"Current user fetch successfully")
 })
 
-export {registerUser , loginUser , logoutUser , refreshAccessToken}
+const updateAccountDetails = asyncHandler( async (req,res) => {
+    const {fullname , email} = req.body;
+    if(!fullname || !email) throw new apiError(400,"fullname and email required");
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullname: fullname,
+                email: email
+            }
+        },
+        {new : true}
+    ).select("-password")
+    
+    return res.status(200)
+    .json(new apiResponse(400,{user},"Account details update successfully"))
+})
+
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateAccountDetails
+}
 
 /*
 Steps to register user : 
