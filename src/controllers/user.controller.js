@@ -2,7 +2,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { oldImageToBeDeleted, uploadOnCloudinary } from "../utils/cloudinary.js";
 import  jwt  from "jsonwebtoken";
 
 const generateAccessAndRefreshTokens = async(userId) => {
@@ -204,10 +204,13 @@ const updateAccountDetails = asyncHandler( async (req,res) => {
 const updateUserAvatar = asyncHandler( async (req,res) => {
     const avatarlocalpath = req.file?.path
     if(!avatarlocalpath) throw new apiError(400,"Avatar file is missing");
-
+    
     const avatar = await uploadOnCloudinary(avatarlocalpath)
     if(!avatar) throw new apiError(500,"Error while uploading on avatar");
-
+    
+    const oldavatar = await User.findById(res.user?._id).avatar
+    if(!oldavatar) throw new apiError(500,"Old avatar not found");
+    
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
@@ -217,6 +220,10 @@ const updateUserAvatar = asyncHandler( async (req,res) => {
         },
         {new: true}
     ).select("-password")
+    
+    const deleteOldAvatar = await destroyOldImageFromCloudinary(oldavatar)
+    if(!deleteOldAvatar || deleteOldAvatar.result !== 'ok') 
+        throw new apiError(500,"Failed to delete old Avatar");
 
     return res.status(200)
     .json(new apiResponse(200,user,"Avatar update successfully"))
@@ -229,6 +236,9 @@ const updateUserCoverImage = asyncHandler( async (req,res) => {
     const coverImage = await uploadOnCloudinary(coverImagelocalpath)
     if(!coverImage) throw new apiError(500,"Error while uploading on cover image");
 
+    const oldcoverimage = await User.findById(res.user?._id).coverImage
+    if(!oldcoverimage) throw new apiError(500,"Old cover image not found");
+
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
@@ -238,6 +248,10 @@ const updateUserCoverImage = asyncHandler( async (req,res) => {
         },
         {new: true}
     ).select("-password")
+
+    const deleteOldCoverImage = await destroyOldImageFromCloudinary(oldcoverimage)
+    if(!deleteOldCoverImage || deleteOldCoverImage.result !== 'ok') 
+        throw new apiError(500,"Failed to delete old cover image");
 
     return res.status(200)
     .json(new apiResponse(200,user,"Avatar update successfully"))
