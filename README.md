@@ -53,6 +53,13 @@ package-lock.json
 README.md
 ```
 
+## public/temp Directory
+
+The `public/temp` directory is used as a temporary storage location for files uploaded by users. When a user uploads a video or image, the file is first saved in this folder (typically by the Multer middleware). After the file is processed—such as being uploaded to a cloud storage service like Cloudinary—it is removed from `public/temp` to conserve space.
+
+**Summary:**  
+`public/temp` acts as a staging area for temporary files during the upload and processing workflow.
+
 ## Technologies Used
 
 - **Node.js** & **Express**: Server and routing framework
