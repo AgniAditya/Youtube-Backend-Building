@@ -98,7 +98,6 @@ README.md
 
 
 ## Scripts
-- `npm start`: Start the server in production mode.
 - `npm run dev`: Start the server in development mode with nodemon.
 
 ## Author
