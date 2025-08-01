@@ -19,32 +19,28 @@ public
 ├── temp
 src
 ├── controllers
-│   ├── authController.js
-│   ├── userController.js
-│   ├── videoController.js
-│   └── subscriptionController.js
+│   └── userController.js
+├── db
+│   └── index.js
 ├── middlewares
-│   ├── authMiddleware.js
-│   ├── errorMiddleware.js
-│   └── uploadMiddleware.js
+│   └── authMiddleware.js
+│   └── multerMiddleware.js
 ├── models
-│   ├── UserModel.js
-│   ├── VideoModel.js
+│   └── UserModel.js
+│   └── VideoModel.js
 │   └── SubscriptionModel.js
 ├── routes
-│   ├── authRoutes.js
 │   ├── userRoutes.js
-│   ├── videoRoutes.js
-│   └── subscriptionRoutes.js
 ├── utils
-│   ├── apiError.js
-|   ├── apiResponse.js
+│   └── apiError.js
+|   └── apiResponse.js
 │   └── asyncHandler.js
-│   ├── cloudinary.js
-|-- constants.js
+│   └── cloudinary.js
+├── constants.js
 ├── app.js
 ├── index.js
 .env
+.env.example
 .gitignore
 package.json
 package-lock.json
