@@ -2,7 +2,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
-import { oldImageToBeDeleted, uploadOnCloudinary } from "../utils/cloudinary.js";
+import { destroyOldImageFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import  jwt  from "jsonwebtoken";
 
 const generateAccessAndRefreshTokens = async(userId) => {
@@ -257,6 +257,71 @@ const updateUserCoverImage = asyncHandler( async (req,res) => {
     .json(new apiResponse(200,user,"Avatar update successfully"))
 })
 
+const getUserChannelDetails = asyncHandler(async (req,res) => {
+    const {username} = req.params
+    if(!username?.trim) throw new apiError(400,"Username not found");
+
+    const channel = await User.aggregate([
+        {
+            $match : {
+                username : username?.toLowerCase()
+            }
+        },
+        {
+            $lookup: {
+                from: "subcriptions",
+                localField: _id,
+                foreignField: channel,
+                as: "subcribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "subcriptions",
+                localField: _id,
+                foreignField: Subcriber,
+                as: "subcribedTO"
+            }
+        },
+        {
+            $addFields: {
+                subcribersCount: {
+                    $size : "$subcribers"
+                },
+                channelsSubcribedToCount: {
+                    $size : "$subcribedTO"
+                },
+                isSubcribed: {
+                    $cond: {
+                        if: {$in: [req.user?._id,"$subcribers.Subcriber"]},
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                fullname : 1,
+                username : 1,
+                subcribersCount : 1,
+                channelsSubcribedToCount : 1,
+                isSubcribed : 1,
+                avatar : 1,
+                coverImage : 1,
+                email : 1
+            }
+        }
+    ])
+
+    if(!channel?.length) throw new apiError(404,"Channel does not exists")
+
+    console.log(channel)
+
+    return res.status(200)
+    .json(new apiResponse(200,channel[0],"User Channel details"))
+})
+
 export {
     registerUser,
     loginUser,
@@ -266,7 +331,8 @@ export {
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
-    updateUserCoverImage
+    updateUserCoverImage,
+    getUserChannelDetails
 }
 
 /*
