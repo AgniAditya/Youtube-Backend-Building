@@ -104,8 +104,8 @@ const logoutUser = asyncHandler( async (req,res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                refreshToken: undefined
+            $unset: {
+                refreshToken: 1
             }
         },
         {
@@ -166,6 +166,9 @@ const changeCurrentPassword = asyncHandler( async (req,res) => {
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
     if(!isPasswordCorrect) throw new apiError(400,"Invalid old password");
 
+    console.log("Old password",oldPassword);
+    console.log("New password",newPassword);
+
     user.password = newPassword;
     await user.save({validateBeforeSave:false})
 
@@ -180,7 +183,7 @@ const changeCurrentPassword = asyncHandler( async (req,res) => {
 
 const getCurrentUser = asyncHandler( async (req,res) => {
     return res.status(200)
-    .json(200,req.user,"Current user fetch successfully")
+    .json(new apiResponse(200,req.user,"Current user fetch successfully"))
 })
 
 const updateAccountDetails = asyncHandler( async (req,res) => {
@@ -196,10 +199,10 @@ const updateAccountDetails = asyncHandler( async (req,res) => {
             }
         },
         {new : true}
-    ).select("-password")
+    ).select("-password -refreshToken")
     
     return res.status(200)
-    .json(new apiResponse(400,user,"Account details update successfully"))
+    .json(new apiResponse(200,user,"Account details update successfully"))
 })
 
 const updateUserAvatar = asyncHandler( async (req,res) => {
@@ -209,7 +212,7 @@ const updateUserAvatar = asyncHandler( async (req,res) => {
     const avatar = await uploadOnCloudinary(avatarlocalpath)
     if(!avatar) throw new apiError(500,"Error while uploading on avatar");
     
-    const oldavatar = await User.findById(res.user?._id).avatar
+    const oldavatar = (await User.findById(req.user?._id))?.avatar
     if(!oldavatar) throw new apiError(500,"Old avatar not found");
     
     const user = await User.findByIdAndUpdate(
@@ -220,7 +223,7 @@ const updateUserAvatar = asyncHandler( async (req,res) => {
             }
         },
         {new: true}
-    ).select("-password")
+    ).select("-password -refreshToken")
     
     const deleteOldAvatar = await destroyOldImageFromCloudinary(oldavatar)
     if(!deleteOldAvatar || deleteOldAvatar.result !== 'ok') 
@@ -265,36 +268,36 @@ const getUserChannelDetails = asyncHandler(async (req,res) => {
     const channel = await User.aggregate([
         {
             $match : {
-                username : username?.toLowerCase()
+                username : username
             }
         },
         {
             $lookup: {
-                from: "subcriptions",
-                localField: _id,
-                foreignField: channel,
-                as: "subcribers"
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
             }
         },
         {
             $lookup: {
-                from: "subcriptions",
-                localField: _id,
-                foreignField: Subcriber,
-                as: "subcribedTO"
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "Subscriber",
+                as: "subscribedTO"
             }
         },
         {
             $addFields: {
-                subcribersCount: {
-                    $size : "$subcribers"
+                subscribersCount: {
+                    $size : "$subscribers"
                 },
-                channelsSubcribedToCount: {
-                    $size : "$subcribedTO"
+                channelsSubscribedToCount: {
+                    $size : "$subscribedTO"
                 },
-                isSubcribed: {
+                isSubscribed: {
                     $cond: {
-                        if: {$in: [req.user?._id,"$subcribers.Subcriber"]},
+                        if: {$in: [req.user?._id,"$subscribers.Subscriber"]},
                         then: true,
                         else: false
                     }
@@ -305,9 +308,9 @@ const getUserChannelDetails = asyncHandler(async (req,res) => {
             $project: {
                 fullname : 1,
                 username : 1,
-                subcribersCount : 1,
-                channelsSubcribedToCount : 1,
-                isSubcribed : 1,
+                subscribersCount : 1,
+                channelsSubscribedToCount : 1,
+                isSubscribed : 1,
                 avatar : 1,
                 coverImage : 1,
                 email : 1
@@ -316,8 +319,6 @@ const getUserChannelDetails = asyncHandler(async (req,res) => {
     ])
 
     if(!channel?.length) throw new apiError(404,"Channel does not exists")
-
-    console.log(channel)
 
     return res.status(200)
     .json(new apiResponse(200,channel[0],"User Channel details"))
