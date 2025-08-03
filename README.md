@@ -1,44 +1,76 @@
-### Building Backend for Youtube
+### 📺 YouTube Backend Clone
 
-A backend API for a YouTube-like platform, built with Node.js, Express, and MongoDB. This project handles user authentication, video uploads, subscriptions, and more, following modern backend best practices.
+A scalable backend API for a YouTube-like platform built with Node.js, Express, and MongoDB. It supports user authentication, video management, subscriptions, and more—following modern best practices for backend development.
 
-## Features
+## 🚀 Features
 
-- **User Authentication:** Register, login, logout, and refresh tokens using JWT.
-- **User Management:** Update profile, change password, upload avatar and cover images.
-- **Video Management:** Upload videos and thumbnails, track views, and manage publishing status.
-- **Subscriptions:** Subscribe/unsubscribe to channels.
-- **File Uploads:** Uses Multer for handling file uploads and Cloudinary for cloud storage.
-- **API Responses:** Consistent API response and error handling structure.
-- **Security:** Uses HTTP-only cookies for tokens, bcrypt for password hashing, and CORS configuration.
+- **Authentication**  
+  Register, login, logout, and refresh tokens using **JWT** and secure **HTTP-only cookies**.
+
+- **User Management**  
+  Update profile, change password, upload avatar and cover images.
+
+- **Video Management**  
+  Upload videos and thumbnails, manage views and publishing status.
+
+- **Subscriptions**  
+  Subscribe/unsubscribe to other users' channels.
+
+- **File Uploads**  
+  File handling with **Multer**, storage with **Cloudinary**.
+
+- **API Structure**  
+  Consistent response and error formats using helper utilities.
+
+- **Security**  
+  Secure password hashing with **bcrypt**, CORS configuration, and environment-based variables.
 
 ## Project Structure
 
 ```
-public
-├── temp
-src
-├── controllers
+public/
+├── temp/                      # Temporary file storage
+src/
+├── controllers/              # Business logic for each route
+|   └── commentController.js
+|   └── dashboardController.js
+|   └── healthcheckController.js
+|   └── likeController.js
+|   └── playlistController.js
+|   └── subscriptionController.js
+|   └── tweetController.js
 │   └── userController.js
-├── db
-│   └── index.js
-├── middlewares
+|   └── videoController.js
+├── db/
+│   └── index.js              # MongoDB connection setup
+├── middlewares/             # Custom middleware
 │   └── authMiddleware.js
 │   └── multerMiddleware.js
-├── models
-│   └── UserModel.js
-│   └── VideoModel.js
-│   └── SubscriptionModel.js
-├── routes
-│   ├── userRoutes.js
-├── utils
+├── models/                  # Mongoose schemas
+│   └── commentModel.js
+│   └── likeModel.js
+│   └── playlistModel.js
+│   └── subscriptionModel.js
+│   └── tweetModel.js
+│   └── userModel.js
+│   └── videoModel.js
+├── routes/                  # Express routes
+│   └── commentRoutes.js
+│   └── dashboardRoutes.js
+│   └── healthcheckRoutes.js
+│   └── likeRoutes.js
+│   └── playlistRoutes.js
+│   └── subscriptionRoutes.js
+│   └── tweetRoutes.js
+│   └── userRoutes.js
+├── utils/                   # Utility functions
 │   └── apiError.js
 |   └── apiResponse.js
 │   └── asyncHandler.js
 │   └── cloudinary.js
-├── constants.js
-├── app.js
-├── index.js
+├── constants.js             # Constant values
+├── app.js                   # Express app setup
+├── index.js                 # Entry point
 .env
 .env.example
 .gitignore
@@ -49,31 +81,38 @@ package-lock.json
 README.md
 ```
 
-## public/temp Directory
+## 📁 public/temp Directory
 
-The `public/temp` directory is used as a temporary storage location for files uploaded by users. When a user uploads a video or image, the file is first saved in this folder (typically by the Multer middleware). After the file is processed—such as being uploaded to a cloud storage service like Cloudinary—it is removed from `public/temp` to conserve space.
+The `public/temp` directory is used as a **temporary staging area** for uploaded files.  
+When users upload videos or images:
 
-**Summary:**  
-`public/temp` acts as a staging area for temporary files during the upload and processing workflow.
+1. Files are saved to `public/temp` via **Multer**.
+2. Uploaded to **Cloudinary**.
+3. Removed from local storage afterward.
 
-## Technologies Used
+## 🛠 Technologies Used
 
-- **Node.js** & **Express**: Server and routing framework
-- **MongoDB** & **Mongoose**: Database and ODM
-- **JWT (jsonwebtoken)**: Authentication tokens
-- **bcrypt**: Password hashing
-- **multer**: File uploads
-- **cloudinary**: Cloud file storage
-- **cookie-parser**: Cookie handling
-- **cors**: Cross-origin resource sharing
-- **dotenv**: Environment variable management
-- **mongoose-aggregate-paginate-v2**: Pagination for MongoDB aggregations
-- **Prettier**: Code formatting (dev)
-- **nodemon**: Development server auto-reload (dev)
+| Technology                    | Purpose                              |
+|------------------------------|--------------------------------------|
+| Node.js & Express            | Backend framework                    |
+| MongoDB & Mongoose           | Database and ODM                     |
+| JWT & cookie-parser          | Auth and session management          |
+| bcrypt                       | Password encryption                  |
+| multer                       | File upload handling                 |
+| cloudinary                   | Cloud storage for media              |
+| cors                         | Cross-origin resource sharing        |
+| dotenv                       | Environment variable management      |
+| mongoose-aggregate-paginate-v2 | MongoDB aggregation pagination   |
+| Prettier                     | Code formatting (dev only)           |
+| nodemon                      | Auto-reload server (dev only)        |
 
-## Getting Started
+## ⚙️ Getting Started
 
 1. **Clone the repository**
+   ```sh
+   git clone https://github.com/AgniAditya/Youtube-Backend-Building.git
+   cd Youtube-Backend-Building
+   ```
 2. **Install dependencies**
    ```sh
    npm install
@@ -92,12 +131,14 @@ The `public/temp` directory is used as a temporary storage location for files up
     CLOUDINARY_API_SECERT=<fill-your-api-secret>
     CLOUDINARY_URL=<fill-your-cloudinary-url>
    ```
-4. **Development mode**
-   For development, use nodemon to auto-reload on changes:
+4. **Start Development Server**
    ```sh
    npm run dev
    ```
-5. **API available at:** http://localhost:PORT/api/v1/
+5. **API available at:** 
+   ```sh
+   http://localhost:<PORT>
+   ```
 
 
 ## Scripts
