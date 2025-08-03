@@ -41,16 +41,10 @@ const getAllVideoComments = asyncHandler( async (req,res) => {
         }
     ])
 
-    const totalComments = await Comment.countDocuments({
-        $match: {
-            video : mongoose.Types.ObjectId(videoId)
-        }
-    })
-
     return res.status(200)
     .json(new apiResponse(
         200,
-        comments,
+        comments[0],
         "All comments fetch successfully"
     ))
 })
