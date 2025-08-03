@@ -6,7 +6,7 @@ import {Comment} from "../models/comment.model.js"
 import { Video } from "../models/video.model.js";
 
 const getAllVideoComments = asyncHandler( async (req,res) => {
-    const {videoId} = req.params
+    const {videoId} = req.query
     if(!videoId) throw new apiError(404,"Not valid video");
 
     const page = parseInt(req.query.page || 1);
@@ -16,7 +16,7 @@ const getAllVideoComments = asyncHandler( async (req,res) => {
     const comments = await Comment.aggregate([
         {
             $match: {
-                video : mongoose.Types.ObjectId(videoId)
+                video : new mongoose.Types.ObjectId(videoId)
             }
         },
         {
@@ -45,7 +45,7 @@ const getAllVideoComments = asyncHandler( async (req,res) => {
     return res.status(200)
     .json(new apiResponse(
         200,
-        comments[0],
+        comments,
         "All comments fetch successfully"
     ))
 })
