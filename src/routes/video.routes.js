@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { uploadVideo } from "../controllers/video.controller.js";
+import { getAllVideos, uploadVideo } from "../controllers/video.controller.js";
 
 const router = Router()
+router.use(verifyJWT)
 
 router.route("/upload-video").post(
-    verifyJWT,
     upload.fields([
         {
             name: "video",
@@ -19,5 +19,6 @@ router.route("/upload-video").post(
     ]),
     uploadVideo
 )
+router.route("/get-all-videos").get(getAllVideos)
 
 export default router
