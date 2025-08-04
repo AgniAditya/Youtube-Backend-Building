@@ -70,7 +70,23 @@ const getAllVideos = asyncHandler(async (req, res) => {
     ))
 })
 
+const getVideoById = asyncHandler(async (req, res) => {
+    const { videoId } = req.query
+    if(!videoId) throw new apiError(404,"video id is required");
+
+    const video = await Video.findById(videoId)
+    if(!video) throw new apiError(404,"video not found");
+
+    return res.status(200)
+    .json(new apiResponse(
+        200,
+        video,
+        "video fetch successfully"
+    ))
+})
+
 export {
     uploadVideo,
-    getAllVideos
+    getAllVideos,
+    getVideoById
 }
