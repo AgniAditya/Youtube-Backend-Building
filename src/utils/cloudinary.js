@@ -25,12 +25,12 @@ const uploadOnCloudinary = async (localfilepath) => {
     }
 }
 
-const destroyOldImageFromCloudinary = async (oldfilepath) => {
+const destroyOldMediaFileFromCloudinary = async (oldfilepath,filetype) => {
     try{
         if(!oldfilepath) return null;
         //Destroy the file from cloudinary
         const response = await cloudinary.uploader.destroy(oldfilepath,{
-            resource_type : 'image'
+            resource_type : filetype
         });
         return response;
     }
@@ -40,4 +40,4 @@ const destroyOldImageFromCloudinary = async (oldfilepath) => {
     }
 }
 
-export {uploadOnCloudinary,destroyOldImageFromCloudinary}
+export {uploadOnCloudinary,destroyOldMediaFileFromCloudinary}
