@@ -30,7 +30,7 @@ const destroyOldImageFromCloudinary = async (oldfilepath) => {
         if(!oldfilepath) return null;
         //Destroy the file from cloudinary
         const response = await cloudinary.uploader.destroy(oldfilepath,{
-            resource_type : 'auto'
+            resource_type : 'image'
         });
         return response;
     }
