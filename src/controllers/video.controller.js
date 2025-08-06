@@ -2,7 +2,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { Video } from "../models/video.model.js";
-import { destroyOldImageFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
+import { destroyOldMediaFileFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
 
 const uploadVideo = asyncHandler( async (req,res) => {
@@ -107,7 +107,7 @@ const updateVideo = asyncHandler(async (req, res) => {
     
             const oldThumbnail = (await Video.findById(videoId)).thumbnail_public_id
             if(oldThumbnail){
-                const destroyed = await destroyOldImageFromCloudinary(oldThumbnail)
+                const destroyed = await destroyOldMediaFileFromCloudinary(oldThumbnail)
                 if(destroyed) console.log("old image deleted successfully")
             }
         }
@@ -136,9 +136,36 @@ const updateVideo = asyncHandler(async (req, res) => {
     }
 })
 
+const deleteVideo = asyncHandler(async (req,res) => {
+    const { videoId } = req.query
+    if(!videoId) throw new apiError(404,"video id not found");
+
+    const video = await Video.findById(videoId)
+    const videofile = video.videofile_public_id
+    const thumbnail = video.thumbnail_public_id
+
+    if(!videofile || !thumbnail) throw new apiError(500,"unable to find media files");
+
+    const destroyVideoFile = await destroyOldMediaFileFromCloudinary(videofile,'video')
+    const destroyThumbnail = await destroyOldMediaFileFromCloudinary(thumbnail,'image')
+
+    if(!destroyThumbnail || !destroyVideoFile) throw new apiError(500,"unable to delete media files");
+
+    const deleteVideo = await Video.findByIdAndDelete(videoId)
+    if(!deleteVideo) throw new apiError(500,"unable to delete video");
+
+    return res.status(200)
+    .json(new apiResponse(
+        200,
+        deleteVideo,
+        "video delete successfully"
+    ))
+})
+
 export {
     uploadVideo,
     getAllVideos,
     getVideoById,
-    updateVideo
+    updateVideo,
+    deleteVideo
 }
