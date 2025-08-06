@@ -106,6 +106,11 @@ When users upload videos or images:
 | Prettier                     | Code formatting (dev only)           |
 | nodemon                      | Auto-reload server (dev only)        |
 
+## 🧪 API Testing
+
+All API endpoints were tested using Postman, a powerful tool for designing, testing, and documenting RESTful APIs.
+You can import a collection and environment (optional) to make testing easier and faster.
+
 ## ⚙️ Getting Started
 
 1. **Clone the repository**
