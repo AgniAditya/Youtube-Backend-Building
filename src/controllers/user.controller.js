@@ -2,7 +2,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
-import { destroyOldImageFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
+import { destroyOldMediaFileFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import  jwt  from "jsonwebtoken";
 import mongoose from "mongoose";
 
@@ -225,7 +225,7 @@ const updateUserAvatar = asyncHandler( async (req,res) => {
         {new: true}
     ).select("-password -refreshToken")
     
-    const deleteOldAvatar = await destroyOldImageFromCloudinary(oldavatar)
+    const deleteOldAvatar = await destroyOldMediaFileFromCloudinary(oldavatar,'image')
     if(!deleteOldAvatar || deleteOldAvatar.result !== 'ok') 
         throw new apiError(500,"Failed to delete old Avatar");
 
@@ -253,7 +253,7 @@ const updateUserCoverImage = asyncHandler( async (req,res) => {
         {new: true}
     ).select("-password")
 
-    const deleteOldCoverImage = await destroyOldImageFromCloudinary(oldcoverimage)
+    const deleteOldCoverImage = await destroyOldMediaFileFromCloudinary(oldcoverimage,'image')
     if(!deleteOldCoverImage || deleteOldCoverImage.result !== 'ok') 
         throw new apiError(500,"Failed to delete old cover image");
 
