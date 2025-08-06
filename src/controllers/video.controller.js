@@ -2,7 +2,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { Video } from "../models/video.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { destroyOldImageFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
 
 const uploadVideo = asyncHandler( async (req,res) => {
@@ -24,7 +24,9 @@ const uploadVideo = asyncHandler( async (req,res) => {
 
     const video = await Video.create({
         videofile: videofile.url,
+        videofile_public_id: videofile.public_id,
         thumbnail: thumbnail.url,
+        thumbnail_public_id: thumbnail.public_id,
         title: title,
         description: description,
         duration: videofile.duration,
@@ -85,8 +87,58 @@ const getVideoById = asyncHandler(async (req, res) => {
     ))
 })
 
+const updateVideo = asyncHandler(async (req, res) => {
+    try {
+        const { videoId } = req.query
+        const newtitle = req.body?.newtitle;
+        const newdescription = req.body?.newdescription;
+        const newthumbnail = req.files?.thumbnail?.[0]?.path;
+        
+        if(!videoId) throw new apiError(404,"video id not found")
+            
+        const updateValues = {}
+        if(newtitle) updateValues.title = newtitle;
+        if(newdescription) updateValues.description = newdescription;
+        if(newthumbnail) {
+            const thumbnail = await uploadOnCloudinary(newthumbnail)
+            if(!thumbnail) new apiError(500,"can not able to update thumbnail");
+            updateValues.thumbnail = thumbnail.url
+            updateValues.thumbnail_public_id = thumbnail.public_id
+    
+            const oldThumbnail = (await Video.findById(videoId)).thumbnail_public_id
+            if(oldThumbnail){
+                const destroyed = await destroyOldImageFromCloudinary(oldThumbnail)
+                if(destroyed) console.log("old image deleted successfully")
+            }
+        }
+    
+        const video = await Video.findByIdAndUpdate(
+            videoId,
+            {
+                $set: updateValues
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        )
+    
+        if(!video) new apiError(500,"unable to update video details");
+    
+        return res.status(200)
+        .json(new apiResponse(
+            200,
+            video,
+            "video details updated successfully"
+        ))
+    } catch (error) {
+        console.log(error)
+    }
+})
+
 export {
     uploadVideo,
     getAllVideos,
-    getVideoById
+    getVideoById,
+    updateVideo
 }
