@@ -2,6 +2,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { Video } from "../models/video.model.js";
+import { Comment } from "../models/comment.model.js";
 import { destroyOldMediaFileFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
 
@@ -146,19 +147,48 @@ const deleteVideo = asyncHandler(async (req,res) => {
 
     if(!videofile || !thumbnail) throw new apiError(500,"unable to find media files");
 
-    const destroyVideoFile = await destroyOldMediaFileFromCloudinary(videofile,'video')
-    const destroyThumbnail = await destroyOldMediaFileFromCloudinary(thumbnail,'image')
+    const session = await mongoose.startSession();
 
-    if(!destroyThumbnail || !destroyVideoFile) throw new apiError(500,"unable to delete media files");
-
-    const deleteVideo = await Video.findByIdAndDelete(videoId)
-    if(!deleteVideo) throw new apiError(500,"unable to delete video");
+    try{
+        await session.withTransaction(async () => {
+            const destroyVideoFile = await destroyOldMediaFileFromCloudinary(videofile,'video')
+            const destroyThumbnail = await destroyOldMediaFileFromCloudinary(thumbnail,'image')
+        
+            if(!destroyThumbnail || !destroyVideoFile) throw new apiError(500,"unable to delete media files");
+        
+            await Video.deleteOne({ _id: videoId }).session(session)
+            await Comment.deleteMany({video: videoId}).session(session)
+        })
+    }
+    catch(error){
+        throw new apiError(500,error.message || "Transaction failed");
+    }
+    finally{
+        session.endSession()
+    }
 
     return res.status(200)
     .json(new apiResponse(
         200,
-        deleteVideo,
         "video delete successfully"
+    ))
+})
+
+const togglePublishStatus = asyncHandler(async (req, res) => {
+    const { videoId } = req.query
+    if(!videoId) throw new apiError(404,"video id not found");
+
+    const video = await Video.findByIdAndUpdate(videoId)
+    if(!video) throw new apiError(500,"video id is not valid");
+
+    video.isPublished = !video.isPublished
+    await video.save({validateBeforeSave : false})
+
+    return res.status(200)
+    .json(new apiResponse(
+        200,
+        video,
+        "video public status toggle successfully"
     ))
 })
 
@@ -167,5 +197,6 @@ export {
     getAllVideos,
     getVideoById,
     updateVideo,
-    deleteVideo
+    deleteVideo,
+    togglePublishStatus
 }
