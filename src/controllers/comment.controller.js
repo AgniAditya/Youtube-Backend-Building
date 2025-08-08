@@ -76,7 +76,37 @@ const addComment = asyncHandler( async (req,res) => {
     ))
 })
 
+const updateComment = asyncHandler(async (req, res) => {
+    // TODO: update a comment
+    const {commentId} = req.query
+    const {content} = req.body
+    if(!commentId || !content) throw new apiError(404,"Content or comment id not found");
+
+    const comment = await Comment.findById(commentId)
+    const session = await mongoose.startSession()
+
+    try {
+        await session.withTransaction(async () => {
+            comment.content = content
+            await comment.save({validateBeforeSave : false})
+        })
+    } catch (error) {
+        throw new apiError(400,error.message || "failed to update comment")
+    }
+    finally{
+        session.endSession()
+    }
+
+    return res.status(200)
+    .json(new apiResponse(
+        200,
+        comment,
+        "comment updated successfully"
+    ))
+})
+
 export {
     getAllVideoComments,
-    addComment
+    addComment,
+    updateComment
 }
