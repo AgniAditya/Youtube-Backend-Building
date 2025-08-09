@@ -60,8 +60,32 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     ))
 })
 
+const addVideoToPlaylist = asyncHandler(async (req, res) => {
+    const {playlistId, videoId} = req.query
+    if(!playlistId || !videoId) throw new apiError(404,"playlist id or video id is not found");
+
+    const addtoplaylist = await PlayList.updateOne(
+        {
+            _id: playlistId
+        },
+        {
+            $addToSet: {videos: videoId}
+        },
+    )
+    if(!addtoplaylist) throw new apiError(400,"playlist id or video id is wrong");
+    console.log(addtoplaylist)
+
+    return res.status(200)
+    .json(new apiResponse(
+        200,
+        addtoplaylist,
+        "video successfully added to playlist"
+    ))
+})
+
 export {
     createPlaylist,
     getUserPlaylists,
-    getPlaylistById
+    getPlaylistById,
+    addVideoToPlaylist,
 }
