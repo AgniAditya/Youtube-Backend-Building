@@ -83,9 +83,32 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     ))
 })
 
+const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
+    const {playlistId, videoId} = req.query
+    if(!playlistId || !videoId) throw new apiError(404,"playlist id or video id is not found");
+
+    const deletevideo = await PlayList.updateOne(
+        {
+            _id: playlistId
+        },
+        {
+            $pull: {videos: videoId}
+        },
+    )
+    if(!deletevideo) throw new apiError(400,"playlist id or video id is wrong");
+
+    return res.status(200)
+    .json(new apiResponse(
+        200,
+        deletevideo,
+        "video successfully deleted from playlist"
+    ))
+})
+
 export {
     createPlaylist,
     getUserPlaylists,
     getPlaylistById,
     addVideoToPlaylist,
+    removeVideoFromPlaylist
 }
