@@ -1,3 +1,4 @@
+import mongoose from "mongoose"
 import {PlayList} from "../models/playlist.model.js"
 import {apiError} from "../utils/ApiError.js"
 import {apiResponse} from "../utils/ApiResponse.js"
@@ -23,7 +24,28 @@ const createPlaylist = asyncHandler(async (req, res) => {
     ))
 })
 
+const getUserPlaylists = asyncHandler(async (req, res) => {
+    const {userId} = req.query
+    if(!userId) throw new apiError(404,"user id not found");
+
+    const playlists = await PlayList.aggregate([
+        {
+            $match: {
+                owner: new mongoose.Types.ObjectId(userId)
+            }
+        }
+    ])
+    if(!playlists) throw new apiError(400,"wrong user id");
+
+    return res.status(200)
+    .json(new apiResponse(
+        200,
+        playlists,
+        "all user playlist fetch successfully"
+    ))
+})
 
 export {
     createPlaylist,
+    getUserPlaylists,
 }
