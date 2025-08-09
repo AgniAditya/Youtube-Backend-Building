@@ -77,7 +77,6 @@ const addComment = asyncHandler( async (req,res) => {
 })
 
 const updateComment = asyncHandler(async (req, res) => {
-    // TODO: update a comment
     const {commentId} = req.query
     const {content} = req.body
     if(!commentId || !content) throw new apiError(404,"Content or comment id not found");
@@ -105,8 +104,24 @@ const updateComment = asyncHandler(async (req, res) => {
     ))
 })
 
+const deleteComment = asyncHandler(async (req, res) => {
+    const {commentId} = req.query
+    if(!commentId) throw new apiError(404,"comment id not found");
+
+    const deletedComment = await Comment.deleteOne({ _id: commentId })
+    if(!deletedComment) throw new apiError(400,"comment id does not exist");
+
+    return res.status(200)
+    .json(new apiResponse(
+        200,
+        deletedComment,
+        "comment deleted successfully"
+    ))
+})
+
 export {
     getAllVideoComments,
     addComment,
-    updateComment
+    updateComment,
+    deleteComment
 }
