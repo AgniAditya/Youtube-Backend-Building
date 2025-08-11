@@ -55,7 +55,18 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     ))
 })
 
+const getLikedVideos = asyncHandler(async (req, res) => {
+    const likedVideos = await Like.findOne({likedBy : req.user})
+    return res.status(200)
+    .json(new apiResponse(
+        200,
+        likedVideos,
+        "All liked videos fetch successfully"
+    ))
+})
+
 export {
     toggleVideoLike,
-    toggleCommentLike
+    toggleCommentLike,
+    getLikedVideos
 }
