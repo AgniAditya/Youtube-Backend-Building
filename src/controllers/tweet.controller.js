@@ -36,7 +36,35 @@ const getUserTweets = asyncHandler(async (req, res) => {
     ))
 })
 
+const updateTweet = asyncHandler(async (req, res) => {
+    const {tweetId} = req.query
+    const {newcontent} = req.body
+    if(!tweetId) throw new apiError(404,"tweet not found");
+    if(!newcontent) throw new apiError(404,"new tweet not found");
+
+    const updatedtweet = await Tweet.findOneAndUpdate(
+        { 
+            _id: tweetId
+        },
+        {
+            $set: { content : newcontent}
+        },
+        {
+            new: true
+        }
+    )
+    if(!updatedtweet) throw new apiError(400,"wrong tweet id");
+
+    return res.status(200)
+    .json(new apiResponse(
+        200,
+        updatedtweet,
+        "tweet updated successfully"
+    ))
+})
+
 export {
     createTweet,
-    getUserTweets
+    getUserTweets,
+    updateTweet
 }
