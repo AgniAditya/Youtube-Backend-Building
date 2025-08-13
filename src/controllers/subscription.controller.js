@@ -69,7 +69,39 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     }
 })
 
+const getSubscribedChannels = asyncHandler(async (req, res) => {
+    const subscriberId  = req.user?._id
+    if(!subscriberId) throw new apiError(404,"user not found");
+
+    const allsubscribedchannels = await Subscription.aggregate([
+        {
+            $match: { Subscriber: new mongoose.Types.ObjectId(subscriberId) }
+        },
+        {
+            $project: {
+                _id: 0,
+                allchannels : "$channel"
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                channels : { $addToSet : "$allchannels"}
+            }
+        }
+    ])
+    if(!allsubscribedchannels) throw new apiError(400,"wrong user");
+
+    return res.status(200)
+    .json(new apiResponse(
+        200,
+        allsubscribedchannels,
+        "all subscribed channels fetch successfully"
+    ))
+})
+
 export {
     toggleSubscription,
-    getUserChannelSubscribers
+    getUserChannelSubscribers,
+    getSubscribedChannels
 }
