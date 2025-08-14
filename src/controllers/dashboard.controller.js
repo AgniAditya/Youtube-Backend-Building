@@ -40,6 +40,22 @@ const getChannelStats = asyncHandler(async (req, res) => {
     ))
 })
 
+const getChannelVideos = asyncHandler(async (req, res) => {
+    // TODO: Get all the videos uploaded by the channel
+    const user = req.user?._id
+    if(!user) throw new apiError(404,"user not found");
+
+    const Videos = await getAllUserVideos(user)
+
+    return res.status(200)
+    .json(new apiResponse(
+        200,
+        Videos,
+        "all videos fetch successfully"
+    ))
+})
+
 export {
-    getChannelStats
+    getChannelStats,
+    getChannelVideos
 }
