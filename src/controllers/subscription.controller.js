@@ -3,6 +3,7 @@ import { Subscription } from "../models/subscriptions.model.js"
 import {apiError} from "../utils/ApiError.js"
 import {apiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
+import { getAllSubscribers } from "../services/subscribers.service.js"
 
 const toggleSubscription = asyncHandler(async (req, res) => {
     try {
@@ -39,24 +40,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
         const {channelId} = req.query
         if(!channelId) throw new apiError(404,"channel not found");
 
-        const allSubscribers = await Subscription.aggregate([
-            {
-                $match: { channel : new mongoose.Types.ObjectId(channelId) }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    subscriber: "$Subscriber"
-                }
-            },
-            {
-                $group: {
-                    _id: null,
-                    subscribers: { $addToSet : "$subscriber"}
-                }
-            }
-        ])
-        if(!allSubscribers) throw new apiError(404,"worng channel id");
+        const allSubscribers = await getAllSubscribers(channelId);
 
         return res.status(200)
         .json(new apiResponse(

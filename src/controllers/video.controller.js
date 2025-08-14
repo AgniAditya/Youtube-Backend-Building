@@ -5,6 +5,7 @@ import { Video } from "../models/video.model.js";
 import { Comment } from "../models/comment.model.js";
 import { destroyOldMediaFileFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
+import { getAllUserVideos } from "../services/video.service.js";
 
 const uploadVideo = asyncHandler( async (req,res) => {
     const {title , description} = req.body
@@ -49,21 +50,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     const userId = req.user?._id
     if(!userId) throw new apiError(404,"user not found");
 
-    const skip = (page - 1) * limit
-
-    const videos = await Video.aggregate([
-        {
-            $match: {
-                owner: new mongoose.Types.ObjectId(userId)
-            }
-        },
-        {
-            $skip: skip
-        },
-        {
-            $limit: limit
-        }
-    ])
+    const videos = await getAllUserVideos(userId,page,limit)
 
     return res.status(200)
     .json(new apiResponse(
